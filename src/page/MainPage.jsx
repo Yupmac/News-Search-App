@@ -1,13 +1,13 @@
 import React from "react";
-import InputField from "../component/searchInput/InputField";
+import { SearchField } from "../component/searchInput/SearchField";
 import Header from "../component/header/Header";
 import ArticleList from "../component/article/ArticleList";
 
-export default function MainPage() {
+export default function MainPage({ setQuery }) {
   return (
     <>
       <Header />
-      <InputField />
+      <SearchField setKeyword={ setQuery }/>
       <ArticleList />
     </>
   );
