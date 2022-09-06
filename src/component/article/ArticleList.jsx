@@ -1,95 +1,109 @@
 import styled from "styled-components";
 import ArticleItem from "./ArticleItem";
-
-const DUMMY_DATA = [
-  {
-    id: "a1",
-    title: "What is Lorem Ipsum?",
-    content:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. ",
-    date: "22.08.12",
-  },
-  {
-    id: "a2",
-    title: "What is Lorem Ipsum?",
-    content:
-      "It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-    date: "22.08.12",
-  },
-  {
-    id: "a3",
-    title: "Where does it come from?",
-    content:
-      "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. ",
-    date: "22.08.12",
-  },
-  {
-    id: "a4",
-    title: "What is Lorem Ipsum?",
-    content:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. ",
-    date: "22.08.12",
-  },
-  {
-    id: "a5",
-    title: "What is Lorem Ipsum?",
-    content:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. ",
-    date: "22.08.12",
-  },
-  {
-    id: "a6",
-    title: "What is Lorem Ipsum?",
-    content:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. ",
-    date: "22.08.12",
-  },
-  {
-    id: "a7",
-    title: "What is Lorem Ipsum?",
-    content:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. ",
-    date: "22.08.12",
-  },
-  {
-    id: "a8",
-    title: "What is Lorem Ipsum?",
-    content:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. ",
-    date: "22.08.12",
-  },
-  {
-    id: "a9",
-    title: "What is Lorem Ipsum?",
-    content:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. ",
-    date: "22.08.12",
-  },
-];
+import { useRef, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { IoIosArrowUp } from "react-icons/io";
+import { setPage } from "../../store/slices/unsave";
+import { getNewsData } from "../../utils/getNewsData";
+import { setMoreArticles } from "../../store/slices/save";
 
 /* CSS */
-const ArticleWrapper = styled.main`
-  article {
-    display: grid;
-    margin-top: 3rem;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-auto-rows: 1fr;
-    line-height: 1.2;
+const MainSection = styled.main`
+  margin-top: 20vh;
+`;
+const ArticleSecion = styled.article`
+  display: grid;
+  margin-top: 1.5rem;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-auto-rows: 1fr;
+  line-height: 1.2;
+`;
+const EmptyArticleText = styled.h2`
+  color: #999;
+  margin-top: 10%;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+`;
+const HrStyle = styled.div`
+  width: 100%;
+  height: 10px;
+  margin-top: 40px;
+  border-top: 3px solid black;
+  border-bottom: 3px solid black;
+`;
+const ScrollTopBtn = styled.button`
+  position: fixed;
+  bottom: 4vh;
+  right: 4vh;
+  width: 8vh;
+  height: 8vh;
+  border-radius: 50%;
+  background-color: #000;
+  opacity: 0.9;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+  &:hover {
+    transform: scale(1.1);
+    animation: transform 0.5s ease;
   }
+`;
+const ScrollTopIcon = styled(IoIosArrowUp)`
+  color: #fff;
+  font-size: 25px;
 `;
 
 export default function ArticleList() {
-  const articles = DUMMY_DATA.map((article) => (
-    <ArticleItem
-      key={article.id}
-      title={article.title}
-      content={article.content}
-      date={article.date}
-    />
-  ));
+  const { everyArticles, clippedArticles, isMainPage } = useSelector(
+    (state) => state.save,
+  );
+
+  let { isLoading, page, keyWord } = useSelector((state) => state.unsave);
+  const dispatch = useDispatch();
+  const observer = useRef();
+  const lastArticleElement = useCallback(
+    (node) => {
+      if (isLoading || !keyWord) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver(async (entries) => {
+        if (entries[0].isIntersecting) {
+          dispatch(setPage({ page: ++page }));
+          const data = await getNewsData(keyWord, page);
+          dispatch(setMoreArticles({ data: data }));
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [isLoading],
+  );
+  const articles = isMainPage ? everyArticles : clippedArticles;
+
+  const content =
+    articles.length === 0 ? (
+      <EmptyArticleText>There are no articles.</EmptyArticleText>
+    ) : (
+      articles.map((article, index) => (
+        <div
+          key={article.id}
+          ref={index === articles.length - 1 ? lastArticleElement : undefined}
+        >
+          <ArticleItem article={article} />
+        </div>
+      ))
+    );
+
+  const scollTopHandler = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <ArticleWrapper>
-      <article>{articles}</article>
-    </ArticleWrapper>
+    <MainSection>
+      <HrStyle />
+      <ArticleSecion>
+        {isLoading ? <EmptyArticleText>Loading...</EmptyArticleText> : content}
+      </ArticleSecion>
+      <ScrollTopBtn onClick={scollTopHandler}>
+        <ScrollTopIcon />
+      </ScrollTopBtn>
+    </MainSection>
   );
 }
