@@ -73,10 +73,10 @@ export default function InputField() {
     if (!isShowHistory) setShow(false);
   };
 
-  const showHistotyHandler = () => {
+  const showHistoryHandler = () => {
     setIsShowHistory(true);
   };
-  const hideHistotyHandler = () => {
+  const hideHistoryHandler = () => {
     setIsShowHistory(false);
   };
 
@@ -108,7 +108,8 @@ export default function InputField() {
           type="text"
           value={keyword}
           onChange={handleKeyword}
-          onFocus={showHistory}
+          autoFocus
+          onClick={showHistory}
           onBlur={hideHistory}
         />
         <IconSt>
@@ -117,8 +118,8 @@ export default function InputField() {
       </InputFormSt>
       {show && (
         <History
-          onShowHistory={showHistotyHandler}
-          onHideHistory={hideHistotyHandler}
+          onShowHistory={showHistoryHandler}
+          onHideHistory={hideHistoryHandler}
         />
       )}
     </InputBarContainerSt>
