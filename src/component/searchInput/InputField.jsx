@@ -57,7 +57,6 @@ const IconSt = styled.div`
 let timer;
 export default function InputField() {
   const [keyword, setKeyword] = useState("");
-  const [isShowHistory, setIsShowHistory] = useState(false);
   const [show, setShow] = useState(false);
   const dispatch = useDispatch();
 
@@ -70,14 +69,7 @@ export default function InputField() {
   };
 
   const hideHistory = () => {
-    if (!isShowHistory) setShow(false);
-  };
-
-  const showHistotyHandler = () => {
-    setIsShowHistory(true);
-  };
-  const hideHistotyHandler = () => {
-    setIsShowHistory(false);
+    setShow(false);
   };
 
   useEffect(() => {
@@ -103,25 +95,17 @@ export default function InputField() {
         <InputSt
           type="text"
           value={keyword}
+          autoFocus
           onChange={handleKeyword}
-          onFocus={showHistory}
+          onClick={showHistory}
           onBlur={hideHistory}
         />
         <IconSt>
           <FaSearch />
         </IconSt>
       </InputFormSt>
-      {/* {show && (
-        <History
-          onShowHistory={showHistotyHandler}
-          onHideHistory={hideHistotyHandler}
-        />
-      )} */}
-      {
-        <History
-          onShowHistory={showHistotyHandler}
-          onHideHistory={hideHistotyHandler}
-        />
+      { show && 
+        <History />
       }
     </InputBarContainerSt>
   );
